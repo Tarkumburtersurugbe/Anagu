@@ -1,0 +1,60 @@
+services:
+  postgres:
+    image: postgis/postgis:16-3.4
+    environment:
+      POSTGRES_DB: anagu_gis
+      POSTGRES_USER: anagu
+      POSTGRES_PASSWORD: anagu_dev_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./infra/sql/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  minio:
+    image: minio/minio:latest
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: anagu_minio
+      MINIO_ROOT_PASSWORD: anagu_minio_password
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+
+  emqx:
+    image: emqx/emqx:5.8
+    ports:
+      - "1883:1883"
+      - "8083:8083"
+      - "18083:18083"
+
+  besu:
+    image: hyperledger/besu:24.9
+    command: ["--network=dev", "--miner-enabled", "--rpc-http-enabled", "--rpc-http-host=0.0.0.0", "--rpc-http-cors-origins=*"]
+    ports:
+      - "8545:8545"
+      - "8546:8546"
+
+  anagu-app:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      POSTGRES_URL: postgresql://anagu:anagu_dev_password@postgres:5432/anagu_gis
+      BESU_RPC_URL: http://besu:8545
+      MQTT_BROKER_URL: mqtt://emqx:1883
+    depends_on:
+      - postgres
+      - redis
+      - minio
+      - emqx
+      - besu
+
+volumes:
+  pgdata:

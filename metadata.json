@@ -1,0 +1,6 @@
+{
+  "name": "ANAGU Land Registry",
+  "description": "Integrated Digital Land Administration and Title Registration System with GIS spatial verification, Ownership Verification Oracle, Hyperledger Besu NFT titles, Section 28 statutory revocation, and MQTT offline sync.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
